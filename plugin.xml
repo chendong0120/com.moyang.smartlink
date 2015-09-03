@@ -14,7 +14,7 @@
         <source-file src="SmartLinkStaticLIb/HFSmartLink.h"/>
         <source-file src="SmartLinkStaticLIb/HFSmartLinkDeviceInfo.h"/>
         <source-file src="src/ios/smartlink.m"/>
-        <source-file framework="true" src="libs/libSmartLinkStaticLib.a"/>
+        <source-file framework="true" src="libSmartLinkStaticLib.a"/>
         <framework src="libSmartLinkStaticLib.a"/>
     </platform>
     <platform name="android">
