@@ -9,16 +9,19 @@
 }
 
 - (void)startSmartLink:(CDVInvokedUrlCommand*)command;
-//-(void)getSSid;
-- (void)getCurrentSSID:(CDVInvokedUrlCommand*)command;
+- (void)getSSid:(CDVInvokedUrlCommand*)command;
+//- (void)getCurrentSSID:(CDVInvokedUrlCommand*)command;
+@property (strong,nonatomic) CDVInvokedUrlCommand * commandHolder;
+
 @end
 
+
 @implementation smartlink{
-HFSmartLink * smtlk;
-BOOL isconnecting;
+    HFSmartLink * smtlk;
+    BOOL isconnecting;
       CDVPluginResult *pluginResult;
 }
-
+@synthesize commandHolder;
 - (void)startSmartLink:(CDVInvokedUrlCommand*)command
 {
     // Do any additional setup after loading the view, typically from a nib.
@@ -29,32 +32,39 @@ BOOL isconnecting;
     NSString *ssid=command.arguments[0];
     NSString *pwd=command.arguments[1];
  
-
+    self.commandHolder=command;
     
     [smtlk startWithKey:pwd processblock:^(NSInteger process) {
        // self.progress.progress = process/18.0;
     } successBlock:^(HFSmartLinkDeviceInfo *dev) {
         //NSLog(dev.mac);
-        NSDictionary  *ret =
-        [NSDictionary dictionaryWithObjectsAndKeys:
+        NSDictionary  *ret =nil;
+        
+       ret= [NSDictionary dictionaryWithObjectsAndKeys:
          dev.mac, @"Mac",
          dev.ip, @"ModuleIPc",
          @"",@"Mid",
          @"",@"Info",
-         @"",@"error",
          nil];
+       
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.commandHolder.callbackId];
     } failBlock:^(NSString *failmsg) {
+        
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:failmsg];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:commandHolder.callbackId];
+        
         } endBlock:^(NSDictionary *deviceDic) {
+            
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:deviceDic];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:commandHolder.callbackId];
             isconnecting  = false;
+            
     }];
- 
-
+   
 }
 //- (void)getSSid
 //{
