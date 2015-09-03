@@ -16,7 +16,7 @@
 @implementation smartlink{
 HFSmartLink * smtlk;
 BOOL isconnecting;
-     CDVPluginResult *pluginResult;
+      CDVPluginResult *pluginResult;
 }
 
 - (void)startSmartLink:(CDVInvokedUrlCommand*)command
@@ -24,28 +24,36 @@ BOOL isconnecting;
     // Do any additional setup after loading the view, typically from a nib.
     smtlk = [HFSmartLink shareInstence];
     smtlk.isConfigOneDevice = true;
+    smtlk.waitTimers=30;
     isconnecting = false;
     NSString *ssid=command.arguments[0];
     NSString *pwd=command.arguments[1];
-   
+ 
 
     
     [smtlk startWithKey:pwd processblock:^(NSInteger process) {
        // self.progress.progress = process/18.0;
     } successBlock:^(HFSmartLinkDeviceInfo *dev) {
-      NSDictionary  *ret =
+        //NSLog(dev.mac);
+        NSDictionary  *ret =
         [NSDictionary dictionaryWithObjectsAndKeys:
-         dev.mac, @"mac",
-        dev.ip, @"ip",
+         dev.mac, @"Mac",
+         dev.ip, @"ModuleIPc",
+         @"",@"Mid",
+         @"",@"Info",
+         @"",@"error",
          nil];
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:ret];
-//        [self  showAlertWithMsg:[NSString stringWithFormat:@"%@:%@",dev.mac,dev.ip] title:@"OK"];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } failBlock:^(NSString *failmsg) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:failmsg];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         } endBlock:^(NSDictionary *deviceDic) {
-        isconnecting  = false;
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:deviceDic];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            isconnecting  = false;
     }];
-
+ 
 
 }
 //- (void)getSSid
