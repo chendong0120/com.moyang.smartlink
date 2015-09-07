@@ -102,7 +102,7 @@ BOOL isconnecting;
             [self.commandDelegate sendPluginResult:pluginResult callbackId:publicCommand.callbackId];
     }
     if(ret!=nil){
-        
+         [self stopPainting];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:publicCommand.callbackId];
 
