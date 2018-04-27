@@ -2,10 +2,14 @@
 #import <Cordova/CDV.h>
 #import "HFSmartLink.h"
 #import "HFSmartLinkDeviceInfo.h"
+#import "smartlinklib_7x.h"
 #import <SystemConfiguration/CaptiveNetwork.h>
+
+// V 7.2.00 for ipv6 compatible
+#define APP_VERSION         @"V 7.2.01"
+HFSmartLink * smtlk;
 @interface smartlink : CDVPlugin {
     // Member variables go here.
- 
 }
 @property (nonatomic, strong) NSTimer *paintingTimer;
 
@@ -15,12 +19,12 @@
 @end
 
 @implementation smartlink{
-HFSmartLink * smtlk;
-BOOL isconnecting;
-      CDVPluginResult *pluginResult;
+    
+    BOOL isconnecting;
+    CDVPluginResult *pluginResult;
     CDVInvokedUrlCommand *publicCommand;
     NSDictionary  *ret;
-   
+    
     NSString *errorMessage;
 }
 
@@ -34,59 +38,67 @@ BOOL isconnecting;
     isconnecting = false;
     NSString *ssid=command.arguments[0];
     NSString *pwd=command.arguments[1];
- 
-    publicCommand=command;
     
-    [smtlk startWithKey:pwd processblock:^(NSInteger process) {
-       // self.progress.progress = process/18.0;
-    } successBlock:^(HFSmartLinkDeviceInfo *dev) {
+    publicCommand=command;
+    [smtlk startWithSSID:ssid Key:pwd withV3x:true  processblock: ^(NSInteger pro) {
         
+    } successBlock:^(HFSmartLinkDeviceInfo *dev) {
         ret =
         [NSDictionary dictionaryWithObjectsAndKeys:
          dev.mac, @"Mac",
          dev.ip, @"ModuleIPc",
-         @"",@"Mid",
-         @"",@"Info",
-         @"",@"error",
+         //         @"",@"Mid",
+         //         @"",@"Info",
+         //         @"",@"error",
          nil];
-       
+        isconnecting  = false;
     } failBlock:^(NSString *failmsg) {
-                 errorMessage=failmsg;
-
-        } endBlock:^(NSDictionary *deviceDic) {
-//            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:deviceDic];
-//            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-//            isconnecting  = false;
+        
+    } endBlock:^(NSDictionary *deviceDic) {
+        //  isconnecting  = false;
     }];
     [self startPainting ];
-
+    
 }
 
 
 - (void)getSSid:(CDVInvokedUrlCommand*)command
 {
     
-    CDVPluginResult *pluginResult = nil;
-    NSString *ssid = nil;
-    NSArray *ifs = (__bridge   id)CNCopySupportedInterfaces();
-    NSLog(@"ifs:%@",ifs);
-    for (NSString *ifnam in ifs) {
-        NSDictionary *info = (__bridge id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
-        NSLog(@"dici：%@",[info  allKeys]);
-        if (info[@"SSID"]) {
-            ssid = info[@"SSID"];
+    NSDictionary *ifs;
+    NSString *ssid;
+    UIAlertView *alert;
+    ifs = [self fetchSSIDInfo];
+    ssid = [ifs objectForKey:@"SSID"];
+    if (ssid!= nil)
+    {
+         CDVPluginResult *pluginResult = nil;
+        if(ssid!=nil && [ssid length] > 0){
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:ssid];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }
-    
-    if(ssid!=nil && [ssid length] > 0){
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:ssid];
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    else
+    {
+        alert= [[UIAlertView alloc] initWithTitle:@"" message:[NSString stringWithFormat:@"请连接Wi-Fi"] delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil];
+        alert.delegate=self;
+        [alert show];
     }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-
+- (id)fetchSSIDInfo {
+    NSArray *ifs = (__bridge_transfer id)CNCopySupportedInterfaces();
+    NSLog(@"Supported interfaces: %@", ifs);
+    id info = nil;
+    for (NSString *ifnam in ifs) {
+        info = (__bridge_transfer id)CNCopyCurrentNetworkInfo((__bridge CFStringRef)ifnam);
+        NSLog(@"%@ => %@", ifnam, info);
+        if (info && [info count]) { break; }
+    }
+    return info;
+}
 
 
 
@@ -98,15 +110,15 @@ BOOL isconnecting;
     
     if(errorMessage!=nil){
         [self stopPainting];
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:publicCommand.callbackId];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:errorMessage];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:publicCommand.callbackId];
     }
     if(ret!=nil){
-         [self stopPainting];
+        [self stopPainting];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:ret];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:publicCommand.callbackId];
-
-        }
+        
+    }
 }
 
 - (void) startPainting{
