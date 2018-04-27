@@ -68,7 +68,11 @@ typedef void(^SmartLinkEndblock)(NSDictionary * deviceDic);
  *  @param fblock 失败block
  *  @param eblock 结束block
  */
--(void)startWithKey:(NSString*)key processblock:(SmartLinkProcessBlock)pblock successBlock:(SmartLinkSuccessBlock)sblock failBlock:(SmartLinkFailBlock)fblock endBlock:(SmartLinkEndblock)eblock;
+//-(void)startWithKey:(NSString*)key processblock:(SmartLinkProcessBlock)pblock successBlock:(SmartLinkSuccessBlock)sblock failBlock:(SmartLinkFailBlock)fblock endBlock:(SmartLinkEndblock)eblock;
+
+-(void)startWithSSID:(NSString*)ssid Key:(NSString*)key withV3x:(BOOL)v3x processblock:(SmartLinkProcessBlock)pblock successBlock:(SmartLinkSuccessBlock)sblock failBlock:(SmartLinkFailBlock)fblock endBlock:(SmartLinkEndblock)eblock;
+// for smartlink V7.0
+//-(void)startWithContent:(char *)content lenght:(int)len key:(NSString *)key withV3x:(BOOL)v3x processblock:(SmartLinkProcessBlock)pblock successBlock:(SmartLinkSuccessBlock)sblock failBlock:(SmartLinkFailBlock)fblock endBlock:(SmartLinkEndblock)eblock;
 /**
  *  停止配置
  *

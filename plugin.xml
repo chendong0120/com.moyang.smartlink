@@ -11,11 +11,12 @@
                 <param name="ios-package" value="smartlink"/>
             </feature>
         </config-file>
-        <source-file src="SmartLinkStaticLIb/HFSmartLink.h"/>
-        <source-file src="SmartLinkStaticLIb/HFSmartLinkDeviceInfo.h"/>
+        <source-file src="libs/ios/HFSmartLink.h"/>
+       <source-file src="libs/ios/HFSmartLinkDeviceInfo.h"/>
+        <source-file src="libs/ios/smartlinklib_7x.h"/>
         <source-file src="src/ios/smartlink.m"/>
-        <source-file framework="true" src="libSmartLinkStaticLib.a"/>
-        <framework src="libSmartLinkStaticLib.a"/>
+        <source-file framework="true" src="libs/ios/libSmartLink7.3.a"/>
+        <framework src="libSmartLink7.3.a"/>
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
